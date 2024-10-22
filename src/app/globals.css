@@ -82,3 +82,16 @@ html, body{
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes slide {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-slide{
+  animation: 15s slide linear infinite;
+}
