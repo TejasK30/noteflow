@@ -47,8 +47,9 @@ const HomePage = () => {
             variant="secondary"
             className=" w-full
             rounded-[10px]
-            p-6
-            text-2xl
+            p-2
+            font-semibold
+            text-xl
             bg-background
           "
           >

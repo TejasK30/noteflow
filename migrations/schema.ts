@@ -1,10 +1,10 @@
 import {
   pgTable,
-  foreignKey,
   uuid,
-  text,
-  jsonb,
   timestamp,
+  text,
+  foreignKey,
+  jsonb,
   boolean,
   check,
   bigint,
@@ -29,6 +29,48 @@ export const subscriptionStatus = pgEnum("subscription_status", [
   "past_due",
   "unpaid",
 ])
+
+export const workspaces = pgTable("workspaces", {
+  id: uuid().defaultRandom().primaryKey().notNull(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+    mode: "string",
+  }).notNull(),
+  workspaceOwner: uuid("workspace_owner").notNull(),
+  text: text().notNull(),
+  iconId: text("icon_id").notNull(),
+  data: text(),
+  inTrash: text("in_trash"),
+  logo: text(),
+  bannerUrl: text("banner_url"),
+})
+
+export const folders = pgTable(
+  "folders",
+  {
+    id: uuid().defaultRandom().primaryKey().notNull(),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+      mode: "string",
+    }).notNull(),
+    text: text().notNull(),
+    iconId: text("icon_id").notNull(),
+    data: text(),
+    inTrash: text("in_trash"),
+    logo: text(),
+    bannerUrl: text("banner_url"),
+    workspaceId: uuid("workspace_id"),
+  },
+  (table) => {
+    return {
+      foldersWorkspaceIdWorkspacesIdFk: foreignKey({
+        columns: [table.workspaceId],
+        foreignColumns: [workspaces.id],
+        name: "folders_workspace_id_workspaces_id_fk",
+      }).onDelete("cascade"),
+    }
+  }
+)
 
 export const users = pgTable(
   "users",
@@ -85,7 +127,6 @@ export const prices = pgTable(
     productId: text("product_id"),
     active: boolean(),
     description: text(),
-    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
     unitAmount: bigint("unit_amount", { mode: "number" }),
     currency: text(),
     type: pricingType(),
@@ -108,7 +149,6 @@ export const prices = pgTable(
     }
   }
 )
-
 export const subscriptions = pgTable("subscriptions", {
   id: text("id").primaryKey().notNull(),
   userId: uuid("user_id").notNull(),
@@ -153,44 +193,3 @@ export const subscriptions = pgTable("subscriptions", {
     mode: "string",
   }).default(sql`now()`),
 })
-export const workspaces = pgTable("workspaces", {
-  id: uuid().defaultRandom().primaryKey().notNull(),
-  createdAt: timestamp("created_at", {
-    withTimezone: true,
-    mode: "string",
-  }).notNull(),
-  workspaceOwner: uuid("workspace_owner").notNull(),
-  text: text().notNull(),
-  iconId: text("icon_id").notNull(),
-  data: text(),
-  inTrash: text("in_trash"),
-  logo: text(),
-  bannerUrl: text("banner_url"),
-})
-
-export const folders = pgTable(
-  "folders",
-  {
-    id: uuid().defaultRandom().primaryKey().notNull(),
-    createdAt: timestamp("created_at", {
-      withTimezone: true,
-      mode: "string",
-    }).notNull(),
-    text: text().notNull(),
-    iconId: text("icon_id").notNull(),
-    data: text(),
-    inTrash: text("in_trash"),
-    logo: text(),
-    bannerUrl: text("banner_url"),
-    workspaceId: uuid("workspace_id"),
-  },
-  (table) => {
-    return {
-      foldersWorkspaceIdWorkspacesIdFk: foreignKey({
-        columns: [table.workspaceId],
-        foreignColumns: [workspaces.id],
-        name: "folders_workspace_id_workspaces_id_fk",
-      }).onDelete("cascade"),
-    }
-  }
-)

@@ -18,7 +18,7 @@ import Image from "next/image"
 import Logo from "../../../../public/cypresslogo.svg"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { LoginUser } from "@/lib/server-actions/auth-action"
+import { loginUser } from "@/lib/server-actions/auth-action"
 
 const LoginPage = () => {
   const router = useRouter()
@@ -33,7 +33,7 @@ const LoginPage = () => {
   const onSubmit: SubmitHandler<z.infer<typeof formSchema>> = async (
     formData
   ) => {
-    const { error } = await LoginUser(formData)
+    const { error } = await loginUser(formData)
     if (error) {
       form.reset()
       setSubmitError(error.message)
@@ -63,7 +63,7 @@ const LoginPage = () => {
             disabled={isLoading}
             control={form.control}
             name="email"
-            render={(field) => (
+            render={({ field }) => (
               <FormItem>
                 <FormControl>
                   <Input type="email" placeholder="Email" {...field} />
@@ -75,7 +75,7 @@ const LoginPage = () => {
             disabled={isLoading}
             control={form.control}
             name="password"
-            render={(field) => (
+            render={({ field }) => (
               <FormItem>
                 <FormControl>
                   <Input type="password" placeholder="Password" {...field} />
