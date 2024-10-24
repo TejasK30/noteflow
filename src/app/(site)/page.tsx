@@ -13,6 +13,7 @@ import clsx from "clsx"
 import CustomCard from "@/components/landing-page/custom-card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { CardContent, CardDescription, CardTitle } from "@/components/ui/card"
+import Link from "next/link"
 
 const HomePage = () => {
   return (
@@ -43,18 +44,20 @@ const HomePage = () => {
           sm:w-[300px]
         "
         >
-          <Button
-            variant="secondary"
-            className=" w-full
+          <Link href="/signup">
+            <Button
+              variant="secondary"
+              className=" w-full
             rounded-[10px]
             p-2
             font-semibold
             text-xl
             bg-background
           "
-          >
-            Get Noteflow Free
-          </Button>
+            >
+              Get Noteflow Free
+            </Button>
+          </Link>
         </div>
         <div
           className="md:mt-[-90px]

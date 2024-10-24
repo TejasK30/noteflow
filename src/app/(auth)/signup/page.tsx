@@ -1,5 +1,7 @@
 "use client"
-import { signupUser } from "@/lib/server-actions/auth-action"
+import Loader from "@/components/Loader"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
 import {
   Form,
   FormControl,
@@ -8,19 +10,19 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form"
-import Link from "next/link"
-import Image from "next/image"
-import Logo from "../../../../public/cypresslogo.svg"
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import { signupUser } from "@/lib/server-actions/auth-action"
+import { formSchema } from "@/lib/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import clsx from "clsx"
-import { useRouter, useSearchParams } from "next/navigation"
-import { useMemo, useState } from "react"
-import { SubmitHandler, useForm } from "react-hook-form"
 import { MailCheck } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
+import { useSearchParams } from "next/navigation"
+import { useMemo, useState } from "react"
+import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import Logo from "../../../../public/cypresslogo.svg"
 
 export const signUpFormSchema = z
   .object({
@@ -40,137 +42,149 @@ export const signUpFormSchema = z
   })
 
 const Signup = () => {
-  const router = useRouter()
   const searchParams = useSearchParams()
-  const [submitError, setSubmitError] = useState<string>("")
-  const [confirmation, setConfirmation] = useState<boolean>(false)
-  const exchangeError = useMemo(() => {
+  const [submitError, setSubmitError] = useState("")
+  const [confirmation, setConfirmation] = useState(false)
+
+  const codeExchangeError = useMemo(() => {
     if (!searchParams) return ""
-    searchParams.get("error_description")
-    // error_description is to get specific error message
+    return searchParams.get("error_description")
   }, [searchParams])
 
-  const errorStyles = useMemo(() => {
-    clsx("bg-primary", {
-      "bg-red-500/10": exchangeError,
-      "border-red-500/10": exchangeError,
-      "text-red-500": exchangeError,
-    })
-  }, [exchangeError])
+  const confirmationAndErrorStyles = useMemo(
+    () =>
+      clsx("bg-primary", {
+        "bg-red-500/10": codeExchangeError,
+        "border-red-500/50": codeExchangeError,
+        "text-red-700": codeExchangeError,
+      }),
+    [codeExchangeError]
+  )
 
   const form = useForm<z.infer<typeof signUpFormSchema>>({
     mode: "onChange",
     resolver: zodResolver(signUpFormSchema),
     defaultValues: { email: "", password: "", confirmPassword: "" },
   })
-  const isLoading = form.formState.isSubmitting
 
-  const onSubmit: SubmitHandler<z.infer<typeof signUpFormSchema>> = async (
-    formData
-  ) => {
-    const { error } = await signupUser(formData)
+  const isLoading = form.formState.isSubmitting
+  const onSubmit = async ({ email, password }: z.infer<typeof formSchema>) => {
+    const { error } = await signupUser({ email, password })
     if (error) {
-      form.reset()
       setSubmitError(error.message)
-      router.replace("/dashboard")
+      form.reset()
+      return
     }
     setConfirmation(true)
   }
 
   return (
-    <>
-      <Form {...form}>
-        <form
-          onChange={() => {
-            if (submitError) setSubmitError("")
-          }}
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="flex flex-col w-full sm:justify-center sm:w-[400px] space-y-6"
+    <Form {...form}>
+      <form
+        onChange={() => {
+          if (submitError) setSubmitError("")
+        }}
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="w-full sm:justify-center sm:w-[400px]
+          space-y-6 flex
+          flex-col
+          "
+      >
+        <Link
+          href="/"
+          className="
+            w-full
+            flex
+            justify-left
+            items-center"
         >
-          <Link href="/" className="flex w-full justify-left items-center">
-            <Image src={Logo} alt="brand logo" width={50} height={50} />
-            <span className="font-semibold text-4xl ml-2 first-letter:ml-2 dark:text-white">
-              Noteflow
-            </span>
-          </Link>
-          <FormDescription className="text-foreground/60">
-            All in one collaboration and productivity platform
-          </FormDescription>
-          <FormField
-            disabled={isLoading}
-            control={form.control}
-            name="email"
-            render={({field}) => (
-              <FormItem>
-                <FormControl>
-                  <Input type="email" placeholder="Email" {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          ></FormField>
-          <FormField
-            disabled={isLoading}
-            control={form.control}
-            name="password"
-            render={({field}) => (
-              <FormItem>
-                <FormControl>
-                  <Input type="password" placeholder="Password" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          ></FormField>
-          <FormField
-            disabled={isLoading}
-            control={form.control}
-            name="password"
-            render={({field}) => (
-              <FormItem>
-                <FormControl>
-                  <Input
-                    type="password"
-                    placeholder="Confirm Password"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          ></FormField>
-          {submitError && <FormMessage>{submitError}</FormMessage>}
-          <Button
-            type="submit"
-            className="w-full p-6"
-            size="lg"
-            disabled={isLoading}
+          <Image src={Logo} alt="cypress Logo" width={50} height={50} />
+          <span
+            className="font-semibold
+            dark:text-white text-4xl first-letter:ml-2"
           >
-            {!isLoading ? "Create Account" : "Loading"}
-          </Button>
-          {submitError && <FormMessage>{submitError}</FormMessage>}
-          <span className="self-container">
-            Have an account ?
-            <Link href="/login" className="text-primary">
-              {" "}
-              Log In
-            </Link>
+            cypress.
           </span>
-          {(confirmation || exchangeError) && (
-            <>
-              <Alert className={`${errorStyles}`}>
-                {!exchangeError && <MailCheck className="h-4 w-4" />}
-                <AlertTitle>
-                  {exchangeError ? "Invalid Link" : "Check your email."}
-                </AlertTitle>
-                <AlertDescription>
-                  {exchangeError || "An email confirmation has been sent."}
-                </AlertDescription>
-              </Alert>
-            </>
-          )}
-        </form>
-      </Form>
-    </>
+        </Link>
+        <FormDescription
+          className="
+          text-foreground/60"
+        >
+          An all-In-One Collaboration and Productivity Platform
+        </FormDescription>
+        {!confirmation && !codeExchangeError && (
+          <>
+            <FormField
+              disabled={isLoading}
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input type="email" placeholder="Email" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              disabled={isLoading}
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input type="password" placeholder="Password" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              disabled={isLoading}
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="Confirm Password"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full p-6" disabled={isLoading}>
+              {!isLoading ? "Create Account" : <Loader />}
+            </Button>
+          </>
+        )}
+
+        {submitError && <FormMessage>{submitError}</FormMessage>}
+        <span className="self-container">
+          Already have an account?{" "}
+          <Link href="/login" className="text-primary">
+            Login
+          </Link>
+        </span>
+        {(confirmation || codeExchangeError) && (
+          <>
+            <Alert className={confirmationAndErrorStyles}>
+              {!codeExchangeError && <MailCheck className="h-4 w-4" />}
+              <AlertTitle>
+                {codeExchangeError ? "Invalid Link" : "Check your email."}
+              </AlertTitle>
+              <AlertDescription>
+                {codeExchangeError || "An email confirmation has been sent."}
+              </AlertDescription>
+            </Alert>
+          </>
+        )}
+      </form>
+    </Form>
   )
 }
 
